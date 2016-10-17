@@ -68,7 +68,18 @@ var Engine = (function(global) {
         lastTime = Date.now();
         main();
     }
-
+    
+    function checkCollisions(){
+        allEnemies.forEach(function(enemy){
+            if (player.bounds.x < enemy.bounds.x + enemy.bounds.width &&
+             player.bounds.x + player.bounds.width > enemy.bounds.x &&
+             player.bounds.y < enemy.bounds.y + enemy.bounds.height &&
+             player.bounds.height + player.bounds.y > enemy.bounds.y) {
+                reset();
+            }
+    });
+    }
+    
     /* This function is called by main (our game loop) and itself calls all
      * of the functions which may need to update entity's data. Based on how
      * you implement your collision detection (when two entities occupy the
@@ -80,7 +91,7 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
     }
 
     /* This is called by the update function and loops through all of the
@@ -94,7 +105,6 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
     }
 
     /* This function initially draws the "game level", it will then call
@@ -118,7 +128,11 @@ var Engine = (function(global) {
             numRows = 6,
             numCols = 5,
             row, col;
-
+        
+        //Clear the canvas
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that
          * portion of the "grid"
@@ -137,6 +151,7 @@ var Engine = (function(global) {
         }
 
         renderEntities();
+        renderScore();
     }
 
     /* This function is called by the render function and is called on each game
@@ -153,13 +168,13 @@ var Engine = (function(global) {
 
         player.render();
     }
-
-    /* This function does nothing but it could have been a good place to
-     * handle game reset states - maybe a new game menu or a game over screen
-     * those sorts of things. It's only called once by the init() method.
+    
+    /* This function renders the player's score to the screen.
      */
-    function reset() {
-        // noop
+    function renderScore(){
+        ctx.font = '48px serif';
+        ctx.fillStyle = 'black';
+        ctx.fillText('Score: ' + score, 50, 40);
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -181,3 +196,20 @@ var Engine = (function(global) {
      */
     global.ctx = ctx;
 })(this);
+
+/* This function does nothing but it could have been a good place to
+ * handle game reset states - maybe a new game menu or a game over screen
+ * those sorts of things. It's only called once by the init() method.
+ */
+function reset() {
+    allEnemies = [
+        new Enemy(),
+        new Enemy(),
+        new Enemy(),
+        new Enemy()
+    ];
+    player.x = START_X;
+    player.bounds.x = player.x + 17;
+    player.y = START_Y;
+    player.bounds.y = player.y + 64;
+}
